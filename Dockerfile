@@ -1,23 +1,26 @@
 # Stage 1: Build
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-WORKDIR /app
+WORKDIR /src
 
-# Copy csproj and restore as distinct layers
+# Copy solution and all projects
 COPY *.sln .
-COPY TibiaOracle.Api/*.csproj ./TibiaOracle.Api/
+COPY Connector_TibiaData/ ./Connector_TibiaData/
+COPY TibiaOracle.Api/ ./TibiaOracle.Api/
+COPY TibiaOracle.JobScheduler/ ./TibiaOracle.JobScheduler/
+COPY TibiaOracle.Logic/ ./TibiaOracle.Logic/
+
+# Restore dependencies for the solution
 RUN dotnet restore
 
-# Copy the rest of the files and publish
-COPY . .
-WORKDIR /app/TibiaOracle.Api
-RUN dotnet publish -c Release -o out
+# Build and publish only the TibiaOracle.Api project
+WORKDIR /src/TibiaOracle.Api
+RUN dotnet publish -c Release -o /app/publish
 
 # Stage 2: Run
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
-COPY --from=build /app/TibiaOracle.Api/out ./
+COPY --from=build /app/publish .
 
-# Expose port (adjust if your app uses a different one)
 ENV ASPNETCORE_URLS=http://+:8080
 EXPOSE 8080
 
