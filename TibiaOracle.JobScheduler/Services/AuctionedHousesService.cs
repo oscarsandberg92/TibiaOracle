@@ -89,6 +89,12 @@ namespace TibiaOracle.JobScheduler.Services
         private async void PerformScheduledTasks(object state)
         {
             await SendHouseMessages();
+            var nextInterval = GetNextCronInterval();
+
+            if (nextInterval > TimeSpan.Zero)
+            {
+                _scheduledTimer.Change(nextInterval, Timeout.InfiniteTimeSpan);
+            }
         }
 
         private async Task<SocketCategoryChannel> GetCategoryAsync(SocketGuild guild)
