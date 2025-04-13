@@ -32,7 +32,7 @@ namespace TibiaOracle.JobScheduler.Services
             _client.MessageReceived += MessageReceived;
 
             // Set up a scheduled task to run every 5 minutes (example)
-            _scheduledTimer = new Timer(PerformScheduledTasks, null, TimeSpan.Zero, TimeSpan.FromMinutes(1));
+            _scheduledTimer = new Timer(PerformScheduledTasks, null, TimeSpan.Zero, TimeSpan.FromMinutes(60));
         }
 
         // This is called when the service starts
