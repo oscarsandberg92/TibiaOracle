@@ -1,10 +1,9 @@
 ﻿using Connector_TibiaData.Models;
+using Cronos;
 using Discord;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System;
-using System.ComponentModel;
 using TibiaOracle.Logic.Services;
 
 namespace TibiaOracle.JobScheduler.Services
@@ -17,7 +16,9 @@ namespace TibiaOracle.JobScheduler.Services
 
         private const string LINE_SEPARATOR = "━━━━━━━━━━━━━━━━━━━━━━━\n";
         private const string CHANNEL_NAME = "house-auctions";
+        private const string CATEGORY_NAME = "bot-channels";
         private const string WORLD_NAME = "antica";
+        private CronExpression _cronExpression;
 
         public AuctionedHousesService(IServiceProvider serviceProvider)
         {
@@ -31,22 +32,25 @@ namespace TibiaOracle.JobScheduler.Services
             _client.Ready += OnReady;
             _client.MessageReceived += MessageReceived;
 
-            // Set up a scheduled task to run every 5 minutes (example)
-            _scheduledTimer = new Timer(PerformScheduledTasks, null, TimeSpan.Zero, TimeSpan.FromMinutes(60));
+            _cronExpression = CronExpression.Parse("0 9,20 * * * ?");
+            _scheduledTimer = new Timer(PerformScheduledTasks, null, TimeSpan.Zero, GetNextCronInterval());
         }
 
-        // This is called when the service starts
+        private TimeSpan GetNextCronInterval()
+        {
+            var next = _cronExpression.GetNextOccurrence(DateTime.UtcNow);
+            return next.HasValue ? next.Value - DateTime.UtcNow : TimeSpan.Zero;
+        }
+
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             var token = Environment.GetEnvironmentVariable("DISCORD_TOKEN");
             if (string.IsNullOrWhiteSpace(token))
                 throw new Exception("DISCORD_TOKEN environment variable is missing.");
 
-            // Log in and start the bot
             await _client.LoginAsync(TokenType.Bot, token);
             await _client.StartAsync();
 
-            // Keep the bot running indefinitely
             await Task.Delay(Timeout.Infinite, stoppingToken);
         }
 
@@ -62,7 +66,6 @@ namespace TibiaOracle.JobScheduler.Services
             return Task.CompletedTask;
         }
 
-        // Message handler for the bot
         private async Task MessageReceived(SocketMessage message)
         {
             if (message.Author.IsBot) return;
@@ -71,46 +74,42 @@ namespace TibiaOracle.JobScheduler.Services
             {
                 await message.Channel.SendMessageAsync("🏓 Pong!");
             }
+
+            if (message.Content == "!houses")
+            {
+                using var scope = _serviceProvider.CreateScope();
+                var houseLogic = scope.ServiceProvider.GetRequiredService<HouseLogic>();
+
+                var auctionedHouses = await houseLogic.GetAllAuctionedHouses(WORLD_NAME);
+                var formattedMessage = FormatMessage(auctionedHouses);
+                await message.Channel.SendMessageAsync(formattedMessage);
+            }
         }
 
         private async void PerformScheduledTasks(object state)
         {
-            using var scope = _serviceProvider.CreateScope();
+            await SendHouseMessages();
+        }
 
-            var houseLogic = scope.ServiceProvider.GetRequiredService<HouseLogic>();
-            foreach (var guild in _client.Guilds)
+        private async Task<SocketCategoryChannel> GetCategoryAsync(SocketGuild guild)
+        {
+            var category = guild.CategoryChannels.FirstOrDefault(category => category.Name == CATEGORY_NAME);
+            var categoryId = category?.Id;
+
+            if (categoryId is null)
             {
-                try
-                {
-                    var auctionedHouses = await houseLogic.GetAllAuctionedHouses(WORLD_NAME);
-                    if (!auctionedHouses.Any()) return;
+                var result = await guild.CreateCategoryChannelAsync(CATEGORY_NAME)
+                    ?? throw new Exception("Failed to create category.");
 
-                    var formattedMessage = FormatMessage(auctionedHouses);
-
-                    var channel = guild.Channels.FirstOrDefault(c => c.Name == CHANNEL_NAME);
-                    var channelId = channel?.Id;
-
-                    if (channelId == null)
-                    {
-                        var result = await guild.CreateTextChannelAsync(CHANNEL_NAME)
-                            ?? throw new Exception("Failed to create channel.");
-
-                        channelId = result.Id;
-                    }
-
-                    if (channelId == null)
-                    {
-                        throw new Exception("Could not find channel.");
-                    }
-
-                    var actualChannel = guild.GetTextChannel(channelId.Value);
-                    await actualChannel.SendMessageAsync(formattedMessage);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error in scheduled task: {ex.Message}");
-                }
+                categoryId = result.Id;
             }
+
+            if (categoryId == null)
+            {
+                throw new Exception("Could not find category.");
+            }
+
+            return guild.GetCategoryChannel(categoryId.Value);
         }
 
         private string FormatMessage(IEnumerable<House> auctionedHouses) =>
@@ -140,6 +139,55 @@ namespace TibiaOracle.JobScheduler.Services
             _client.Dispose();
             _scheduledTimer.Dispose();
             base.Dispose();
+        }
+
+        private async Task<SocketTextChannel> GetTextChannelAsync(SocketGuild guild)
+        {
+            var category = await GetCategoryAsync(guild);
+
+            var channel = guild.Channels.FirstOrDefault(c => c.Name == CHANNEL_NAME);
+            var channelId = channel?.Id;
+
+            if (channelId == null)
+            {
+                var result = await guild.CreateTextChannelAsync(CHANNEL_NAME, properties =>
+                {
+                    properties.CategoryId = category.Id;
+                }) ?? throw new Exception("Failed to create channel.");
+
+                channelId = result.Id;
+            }
+
+            if (channelId == null)
+            {
+                throw new Exception("Could not find channel.");
+            }
+
+            return guild.GetTextChannel(channelId.Value);
+        }
+
+        private async Task SendHouseMessages()
+        {
+            using var scope = _serviceProvider.CreateScope();
+
+            var houseLogic = scope.ServiceProvider.GetRequiredService<HouseLogic>();
+            foreach (var guild in _client.Guilds)
+            {
+                try
+                {
+                    var auctionedHouses = await houseLogic.GetAllAuctionedHouses(WORLD_NAME);
+                    if (!auctionedHouses.Any()) return;
+
+                    var formattedMessage = FormatMessage(auctionedHouses);
+                    var channel = await GetTextChannelAsync(guild);
+
+                    await channel.SendMessageAsync(formattedMessage);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error in scheduled task: {ex.Message}");
+                }
+            }
         }
     }
 }
