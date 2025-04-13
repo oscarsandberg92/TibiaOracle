@@ -32,7 +32,7 @@ namespace TibiaOracle.JobScheduler.Services
             _client.Ready += OnReady;
             _client.MessageReceived += MessageReceived;
 
-            _cronExpression = CronExpression.Parse("0 9,20 * * * ?");
+            _cronExpression = CronExpression.Parse("0 9,20 * * *");
             _scheduledTimer = new Timer(PerformScheduledTasks, null, TimeSpan.Zero, GetNextCronInterval());
         }
 
