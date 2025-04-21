@@ -15,8 +15,6 @@ namespace Connector_TibiaData.Models
         public int Rent { get; set; }
         public string Img { get; set; } = string.Empty;
         public Status Status { get; set; } = new();
-        public Information Information { get; set; } = new();
-
     }
 
     public class Status
@@ -39,7 +37,7 @@ namespace Connector_TibiaData.Models
         [JsonPropertyName("current_bid")]
         public int CurrentBid { get; set; }
         [JsonPropertyName("current_bidder")]
-        public int CurrentBidder { get; set; }
+        public string CurrentBidder { get; set; } = string.Empty;
         [JsonPropertyName("auction_ongoing")]
         public bool AuctionOngoing { get; set; }
         [JsonPropertyName("auction_end")]
@@ -58,13 +56,13 @@ namespace Connector_TibiaData.Models
         [JsonPropertyName("transfer_reciever")]
         public string TransferReciever { get; set; } = string.Empty;
         [JsonPropertyName("transfer_price")]
-        public string TransferPrice { get; set; } = string.Empty;
+        public int TransferPrice { get; set; }
         [JsonPropertyName("transfer_accept")]
         public bool TransferAccept { get; set; }
     }
     public class Information
     {
         [JsonPropertyName("tibia_urls")]
-        public string Url { get; set; } = string.Empty;
+        public string[] Url { get; set; } = [];
     }
 }
