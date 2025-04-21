@@ -6,17 +6,20 @@ namespace TibiaOracle.Logic.Services
 {
     public class HouseLogic(HouseService houseService)
     {
-        public async Task<IEnumerable<House>> GetAllAuctionedHouses(string world)
+        public async Task<IEnumerable<HouseDetails>> GetAllAuctionedHouses(string world)
         {
             var towns = Constants.Towns;
-            List<House> result = [];
+            List<HouseDetails> result = [];
 
             foreach (var town in towns)
             {
                 var houses = await houseService.ListAsync(world, town);
                 var auctionedHouses = houses.Where(h => h.Auctioned);
-
-                result.AddRange(auctionedHouses);
+                foreach(var house in auctionedHouses)
+                {
+                    var houseDetails = await houseService.GetAsync(world, house.HouseId);
+                    result.Add(houseDetails);
+                }
             }
 
             return result;

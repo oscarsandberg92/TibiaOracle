@@ -11,5 +11,12 @@ namespace Connector_TibiaData.Services
 
             return result.Houses.HouseList;
         }
+
+        public async Task<HouseDetails> GetAsync(string world, int id)
+        {
+            var result = await client.GetAsync<HouseDetails>($"houses/{world}/{id}");
+
+            return result;
+        }
     }
 }

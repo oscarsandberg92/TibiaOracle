@@ -9,7 +9,7 @@ namespace TibiaOracle.Api.Controllers
     public class HouseController(HouseLogic houseLogic, ILogger<HouseController> _logger) : ControllerBase
     {
         [HttpGet(Name = "GetAvailableHouses")]
-        public async Task<ActionResult<House>> GetAvailableHouses([FromQuery]string world)
+        public async Task<ActionResult<HouseDetails>> GetAvailableHouses([FromQuery]string world)
         {
             var houses = await houseLogic.GetAllAuctionedHouses(world);
 

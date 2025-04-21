@@ -118,26 +118,14 @@ namespace TibiaOracle.JobScheduler.Services
             return guild.GetCategoryChannel(categoryId.Value);
         }
 
-        private string FormatMessage(IEnumerable<House> auctionedHouses) =>
-            string.Join("\n", SortByTimeLeft(auctionedHouses).Select(aH =>
-            $"{aH.Name}\n- Bid: {(aH.Auction.CurrentBid == 0 ? "0" : aH.Auction.CurrentBid / 1000000 + "kk")}\n- Time left: {aH.Auction.TimeLeft}\n{LINE_SEPARATOR}"));
-
-        private static IEnumerable<House> SortByTimeLeft(IEnumerable<House> houses) =>
-            houses.OrderBy(t =>
-            {
-                var parts = t.Auction.TimeLeft.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                if (parts.Length != 2) return int.MaxValue;
-
-                var value = int.TryParse(parts[0], out var num) ? num : int.MaxValue;
-                var unit = parts[1].ToLower();
-
-                return unit switch
-                {
-                    "day" or "days" => value * 24,
-                    "hour" or "hours" => value,
-                    _ => int.MaxValue
-                };
-            }).ThenBy(t => t.Name);
+        private string FormatMessage(IEnumerable<HouseDetails> auctionedHouses) =>
+            string.Join("\n", auctionedHouses.OrderBy(aH => aH.Status.Auction.AuctionEnd).Select(aH =>
+            $"{aH.Name}\n" +
+            $"- Bid: {(aH.Status.Auction.CurrentBid== 0 ? "0" : aH.Status.Auction.CurrentBid / 1000000 + $"kk")})\n" +
+            $"- Size: {aH.Size}sqm" +
+            $"- Link: {aH.Information.Url}" +
+            $"- Ends: {aH.Status.Auction.CurrentBid}\n" +
+            $"{LINE_SEPARATOR}"));
 
         // Ensure cleanup on stop
         public override void Dispose()
