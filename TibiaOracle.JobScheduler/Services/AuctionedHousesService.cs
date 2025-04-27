@@ -122,11 +122,11 @@ namespace TibiaOracle.JobScheduler.Services
         private string FormatMessage(IEnumerable<HouseDetails> auctionedHouses) =>
             string.Join("\n", auctionedHouses.OrderBy(aH => aH.Status.Auction.AuctionEnd).Select(aH =>
             $"{aH.Name}. [{aH.Town}]\n" +
-            $"- Bid: {(aH.Status.Auction.CurrentBid== 0 ? "0" : aH.Status.Auction.CurrentBid / 1000000 + $"kk ({aH.Status.Auction.CurrentBidder})")}\n" +
+            $"- Bid: {(aH.Status.Auction.CurrentBid== 0 ? "None" : aH.Status.Auction.CurrentBid / 1000000 + $"kk ({aH.Status.Auction.CurrentBidder})")}\n" +
             $"- Size: {aH.Size}sqm\n" +
-            $"- Beds: {aH.Beds}" +
+            $"- Beds: {aH.Beds}\n" +
             $"- Link: https://www.tibia.com/community/?subtopic=houses&page=view&world={aH.World}&houseid={aH.Id}\n" +
-            $"- Ends: {aH.Status.Auction.AuctionEnd.ToShortDateString()}\n" +
+            $"- Ends: {aH.Status.Auction.AuctionEnd}\n" +
             $"{LINE_SEPARATOR}"));
 
         // Ensure cleanup on stop

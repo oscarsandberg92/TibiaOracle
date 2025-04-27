@@ -41,7 +41,7 @@ namespace Connector_TibiaData.Models
         [JsonPropertyName("auction_ongoing")]
         public bool AuctionOngoing { get; set; }
         [JsonPropertyName("auction_end")]
-        public DateTime AuctionEnd { get; set; }
+        public string AuctionEnd { get; set; } = string.Empty;
     }
 
     public class RentalDetails
