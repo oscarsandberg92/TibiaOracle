@@ -5,6 +5,7 @@ WORKDIR /src
 # Copy solution and all projects
 COPY *.sln .
 COPY Connector_TibiaData/ ./Connector_TibiaData/
+COPY Connector_TibiaMarket/ ./Connector_TibiaMarket/
 COPY TibiaOracle.Api/ ./TibiaOracle.Api/
 COPY TibiaOracle.JobScheduler/ ./TibiaOracle.JobScheduler/
 COPY TibiaOracle.Logic/ ./TibiaOracle.Logic/
