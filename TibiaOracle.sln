@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.13.35913.81 d17.13
+VisualStudioVersion = 17.13.35913.81
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TibiaOracle.Api", "TibiaOracle.Api\TibiaOracle.Api.csproj", "{264CF5CB-8C3B-484C-A053-1A208B8E297B}"
 EndProject
@@ -15,6 +15,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		Dockerfile = Dockerfile
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Connector_TibiaMarket", "Connector_TibiaMarket\Connector_TibiaMarket.csproj", "{A31178D0-99E6-424A-ADB0-283451735381}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -38,6 +40,10 @@ Global
 		{A63F224B-850B-4996-8047-3A59F0CBD1E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A63F224B-850B-4996-8047-3A59F0CBD1E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A63F224B-850B-4996-8047-3A59F0CBD1E1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A31178D0-99E6-424A-ADB0-283451735381}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A31178D0-99E6-424A-ADB0-283451735381}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A31178D0-99E6-424A-ADB0-283451735381}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A31178D0-99E6-424A-ADB0-283451735381}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

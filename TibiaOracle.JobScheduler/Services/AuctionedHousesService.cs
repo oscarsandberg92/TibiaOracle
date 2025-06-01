@@ -85,6 +85,15 @@ namespace TibiaOracle.JobScheduler.Services
                 
                 await message.Channel.SendMessageAsync(formattedMessage);
             }
+
+            if (message.Content == "!makemoney")
+            {
+                using var scope = _serviceProvider.CreateScope();
+                var marketLogic = scope.ServiceProvider.GetRequiredService<MarketLogic>();
+
+                var result = await marketLogic.RunAsync();
+                await message.Channel.SendMessageAsync($"{string.Join('\n', result.Take(20))}");
+            }
         }
 
         private async void PerformScheduledTasks(object state)
