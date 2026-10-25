@@ -10,7 +10,7 @@ namespace Connector_TibiaData
         {
             services.AddHttpClient("TibiaApi", client =>
             {
-                client.BaseAddress = new Uri("https://api.tibiadata.com/v4/");
+                client.BaseAddress = new Uri("https://api.tibiadata.com/v5/");
                 client.DefaultRequestHeaders.Add("Accept", "application/json");
             });
 
